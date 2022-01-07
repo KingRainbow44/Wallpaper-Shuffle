@@ -20,15 +20,15 @@ public final class WallpaperShuffle
             System.exit(1);
         }
 
-        File directory = new File(args[0]);
-        if(!directory.canRead() || !directory.exists() || !directory.isDirectory()) {
-            System.out.println("Invalid directory: " + args[0]); System.exit(1);
-        }
-        
-        instance = new WallpaperShuffle(directory, args);
+        if(!args[0].matches("--self")) {
+            File directory = new File(args[0]);
+            if(!directory.canRead() || !directory.exists() || !directory.isDirectory()) {
+                System.out.println("Invalid directory: " + args[0]); System.exit(1);
+            } instance = new WallpaperShuffle(directory, args);
+        } else instance = new WallpaperShuffle(null, args);
     }
 
-    public final File directory;
+    public File directory;
     
     /*
      * Optional settings to change in the command line.
@@ -44,10 +44,18 @@ public final class WallpaperShuffle
     public List<File> alreadyUsed = new ArrayList<>(); // This goes unused if repeats are allowed.
     
     public WallpaperShuffle(File wallpaperCollection, String[] additionalArgs) {
-        directory = wallpaperCollection;
+        if(wallpaperCollection != null) directory = wallpaperCollection; else {
+            selfStart(); return;
+        }
         
         parseArguments(additionalArgs); // Set additional settings from command line arguments.
         start(); // Start the wallpaper shuffling after settings have been set.
+    }
+    
+    private void selfStart() {
+        Configuration configuration = new Configuration(new File(StartupConfigurator.getConfigFile()));
+        delay = configuration.delay; allowRepeats = configuration.repeats; directory = new File(String.valueOf(configuration.directory));
+        start(); // Start the wallpaper shuffling after overriding settings.
     }
     
     private void start() {
@@ -94,6 +102,7 @@ public final class WallpaperShuffle
                                 [-h, --help] Print this help message.
                                 [-d, --delay] Set the delay between wallpaper changes in seconds.
                                 [-r, --repeat] Allow wallpaper repeats.
+                                [-s, --startup] Configure WallpaperShuffle to start automatically on startup.
                                 """
                         );
                     }
@@ -104,16 +113,14 @@ public final class WallpaperShuffle
             }
             case "-d", "--delay" -> {
                 delay = Integer.parseInt(value);
-                System.out.println("Delay set to " + delay + " seconds.");
             }
             case "-r", "--repeat" -> {
                 allowRepeats = Boolean.parseBoolean(value);
-                System.out.println(allowRepeats ? "Repeats enabled." : "Repeats disabled.");
             }
             case "-s", "--startup" -> {
                 boolean enable = Boolean.parseBoolean(value);
                 if(enable && !StartupConfigurator.startupEnabled())
-                    StartupConfigurator.enableStartup();
+                    StartupConfigurator.enableStartup(directory);
                 else if (!enable && StartupConfigurator.startupEnabled())
                     StartupConfigurator.disableStartup();
             }

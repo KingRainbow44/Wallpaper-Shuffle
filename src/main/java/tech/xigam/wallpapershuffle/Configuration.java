@@ -23,7 +23,7 @@ public final class Configuration {
             String[] lines = file.split("\n");
             
             for(String line : lines) {
-                String[] split = line.split("=");
+                String[] split = line.split("="); if(split.length != 2) continue;
                 String option = split[0].toLowerCase(); String value = split[1].toLowerCase();
                 
                 set(option, value);
