@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.TimerTask;
 
-public final class ShuffleTask extends TimerTask implements Runnable 
+public final class ShuffleTask extends TimerTask 
 {
     private final WallpaperShuffle wallpaperShuffle;
     

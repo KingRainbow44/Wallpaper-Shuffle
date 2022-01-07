@@ -1,5 +1,7 @@
 package tech.xigam.wallpapershuffle;
 
+import tech.xigam.wallpapershuffle.utils.StartupConfigurator;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +53,12 @@ public final class WallpaperShuffle
     private void start() {
         ShuffleTask task = new ShuffleTask(this);
         Timer timer = new Timer(); timer.schedule(task, 0, delay * 1000L);
+        
+        System.out.println("[WallpaperShuffle] Started at a delay of " + delay + " seconds.");
+        System.out.println("[WallpaperShuffle] Repeats are " + (allowRepeats ? "allowed." : "not allowed."));
+        System.out.println("[WallpaperShuffle] Shuffling wallpaper collection at " + directory.getAbsolutePath() + ".");
+        System.out.println("[WallpaperShuffle] Press CTRL+C to stop.");
+        System.out.println("[WallpaperShuffle] Restart the program with the `--help all` option to see a list of available options.");
     }
     
     private void parseArguments(String[] args) {
@@ -75,29 +83,40 @@ public final class WallpaperShuffle
     }
     
     private void setArgument(String option, String value) {
-        switch(option) {
-            default:
-                System.out.println("Invalid argument: " + option);
-                return;
-            case "-h":
-            case "--help":
-                System.out.println("Usage: java -jar WallpaperShuffle.jar <path to wallpaper collection> [options]");
-                System.out.println(
-                        """
-                        [-h, --help] Print this help message.
-                        [-d, --delay] Set the delay between wallpaper changes in seconds.
-                        [-r, --repeat] Allow wallpaper repeats.
-                        """
-                );
-                return;
-            case "-d":
-            case "--delay":
+        switch (option) {
+            default -> System.out.println("Invalid argument: " + option);
+            case "-h", "--help" -> {
+                switch (value) {
+                    default -> {
+                        System.out.println("Usage: java -jar WallpaperShuffle.jar <path to wallpaper collection> [options]");
+                        System.out.println(
+                                """
+                                [-h, --help] Print this help message.
+                                [-d, --delay] Set the delay between wallpaper changes in seconds.
+                                [-r, --repeat] Allow wallpaper repeats.
+                                """
+                        );
+                    }
+                    case "delay" -> System.out.println("[-d, --delay] Set the delay between wallpaper changes in seconds.");
+                    case "repeat" -> System.out.println("[-r, --repeat] Allow wallpaper repeats.");
+                }
+                System.exit(1);
+            }
+            case "-d", "--delay" -> {
                 delay = Integer.parseInt(value);
-                return;
-            case "-r":
-            case "--repeat":
+                System.out.println("Delay set to " + delay + " seconds.");
+            }
+            case "-r", "--repeat" -> {
                 allowRepeats = Boolean.parseBoolean(value);
-                return;
+                System.out.println(allowRepeats ? "Repeats enabled." : "Repeats disabled.");
+            }
+            case "-s", "--startup" -> {
+                boolean enable = Boolean.parseBoolean(value);
+                if(enable && !StartupConfigurator.startupEnabled())
+                    StartupConfigurator.enableStartup();
+                else if (!enable && StartupConfigurator.startupEnabled())
+                    StartupConfigurator.disableStartup();
+            }
         }
     }
 }

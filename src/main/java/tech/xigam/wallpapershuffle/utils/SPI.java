@@ -6,6 +6,7 @@ import com.sun.jna.win32.*;
 
 import java.util.HashMap;
 
+@SuppressWarnings({"UnusedReturnValue", "deprecation"})
 public interface SPI extends StdCallLibrary {
     long SPI_SETDESKWALLPAPER = 20;
     long SPIF_UPDATEINIFILE = 0x01;
